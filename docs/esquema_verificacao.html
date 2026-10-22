@@ -1,0 +1,353 @@
+<title>Esquema de Verificação Fiscal</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: documento técnico de uma coluna — duas figuras de mecanismo (fluxo com gates; fronteira de dados) e uma tabela de conformidade regra → controle. Mesma família visual do quadro e da mesa. */
+:root {
+  --bg: #f3f5f8;
+  --sheet: #ffffff;
+  --ink: #16202b;
+  --muted: #5a6675;
+  --line: #cfd6df;
+  --accent: #1d4ed8;
+  --accent-soft: #e3eafc;
+  --gate: #b45309;
+  --gate-soft: #fdf0e1;
+  --bad: #b91c1c;
+  --bad-soft: #fbe4e4;
+  --ok: #15803d;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141a; --sheet: #161d26; --ink: #e6ebf1; --muted: #98a4b3; --line: #2f3b49;
+    --accent: #7aa2ff; --accent-soft: #1b2a4a; --gate: #f0a050; --gate-soft: #33230f;
+    --bad: #f07a7a; --bad-soft: #3a1717; --ok: #5fcf86;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141a; --sheet: #161d26; --ink: #e6ebf1; --muted: #98a4b3; --line: #2f3b49;
+  --accent: #7aa2ff; --accent-soft: #1b2a4a; --gate: #f0a050; --gate-soft: #33230f;
+  --bad: #f07a7a; --bad-soft: #3a1717; --ok: #5fcf86;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 72px;
+}
+.doc { max-width: 1120px; margin: 0 auto; display: grid; gap: 34px; }
+header { display: grid; gap: 10px; max-width: 72ch; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(28px, 5vw, 42px); line-height: 1.05; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+h2 { font-family: var(--f-display); font-weight: 700; font-size: 21px; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.lede { color: var(--muted); }
+section { display: grid; gap: 14px; min-width: 0; }
+section > p { max-width: 72ch; }
+
+figure { margin: 0; background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 18px 18px 14px; display: grid; gap: 12px; min-width: 0; }
+.rolagem { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.rolagem svg { display: block; width: 100%; min-width: 900px; height: auto; color: var(--ink); }
+figcaption { font-size: 13.5px; color: var(--muted); max-width: 80ch; }
+.dica { font-size: 12px; color: var(--muted); display: none; }
+@media (max-width: 940px) { .dica { display: block; } }
+
+/* classes usadas dentro dos SVGs (estilo vem da página, não do SVG) */
+svg text { font-family: var(--f-body); fill: currentColor; }
+svg .t-tit { font-weight: 600; font-size: 12.5px; }
+svg .t-sub { font-size: 11px; fill: var(--muted); }
+svg .t-mono { font-family: var(--f-mono); font-size: 10.5px; fill: var(--muted); }
+svg .t-cab { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .08em; fill: var(--muted); }
+svg .t-gate { font-size: 11px; fill: var(--gate); font-weight: 500; }
+svg .t-loop { font-size: 11px; fill: var(--accent); }
+svg .t-bad { font-size: 11.5px; fill: var(--bad); font-weight: 500; }
+svg .caixa { fill: var(--sheet); stroke: currentColor; stroke-width: 1.2; }
+svg .caixa-forte { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.6; }
+svg .gate { fill: var(--gate-soft); stroke: var(--gate); stroke-width: 1.2; }
+svg .reg { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+svg .proibido { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 1.2; }
+svg .seta { stroke: currentColor; stroke-width: 1.4; fill: none; }
+svg .seta-loop { stroke: var(--accent); stroke-width: 1.3; fill: none; stroke-dasharray: 5 4; }
+svg .liga-gate { stroke: var(--gate); stroke-width: 1; stroke-dasharray: 3 3; }
+svg .liga-reg { stroke: var(--line); stroke-width: 1; stroke-dasharray: 1 3; }
+svg .fronteira { stroke: var(--bad); stroke-width: 1.4; stroke-dasharray: 8 5; }
+svg .x { stroke: var(--bad); stroke-width: 2; }
+svg .container { fill: none; stroke: currentColor; stroke-width: 1; stroke-dasharray: 6 4; }
+svg .ponta { fill: currentColor; }
+svg .ponta-loop { fill: var(--accent); }
+
+.tabela { overflow-x: auto; background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-top: 1px solid var(--line); }
+thead th { border-top: 0; font-family: var(--f-mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; background: var(--bg); }
+td.ref { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+.tag { display: inline-block; font-size: 11.5px; font-weight: 600; border-radius: 999px; padding: 1px 8px; margin-right: 6px; white-space: nowrap; }
+.auto { background: var(--accent-soft); color: var(--accent); }
+.humano { background: var(--gate-soft); color: var(--gate); }
+code { font-family: var(--f-mono); font-size: .9em; }
+
+.onde { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.onde div { background: var(--sheet); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 4px; min-width: 0; }
+.onde b { font-weight: 600; }
+.onde span { font-size: 13.5px; color: var(--muted); }
+.onde a { color: var(--accent); text-underline-offset: 2px; }
+footer { font-size: 12.5px; color: var(--muted); max-width: 80ch; }
+</style>
+
+<div class="doc">
+  <header>
+    <div class="eyebrow">Frente fiscal · protocolo v2.0</div>
+    <h1>Esquema de Verificação Fiscal</h1>
+    <p class="lede">Como um documento entra, é verificado e sai como conclusão pública. Quem decide cada passo, o que trava o avanço e quais dados nunca atravessam a fronteira.</p>
+  </header>
+
+  <section aria-labelledby="s1">
+    <h2 id="s1">1. Do documento ao relatório</h2>
+    <p>Cada etapa só avança quando o seu gate é cumprido, e cada gate deixa um registro conferível. Os dois retornos em azul são o que mantém o método honesto: divergência ou objeção aceita manda a análise de volta, e material novo entra de novo pela custódia.</p>
+    <figure>
+      <div class="rolagem">
+        <svg viewBox="0 0 1090 306" role="img" aria-label="Fluxo em oito etapas, do protocolo congelado à publicação, com o gate de cada etapa, o registro correspondente e dois retornos: do Comitê para a análise e da publicação para a custódia.">
+          <defs>
+            <marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ponta" d="M0,0 L10,5 L0,10 z"/></marker>
+            <marker id="m1l" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ponta-loop" d="M0,0 L10,5 L0,10 z"/></marker>
+          </defs>
+
+          <!-- retornos -->
+          <path class="seta-loop" d="M1014,80 C1014,8 344,8 344,80" marker-end="url(#m1l)"/>
+          <text class="t-loop" x="679" y="20" text-anchor="middle">originais entregues ou contestação nova → volta à custódia</text>
+          <path class="seta-loop" d="M880,80 C880,45 612,45 612,80" marker-end="url(#m1l)"/>
+          <text class="t-loop" x="746" y="46" text-anchor="middle">diverge ou objeção aceita → refazer</text>
+
+          <!-- etapas -->
+          <g>
+            <rect class="caixa-forte" x="20" y="80" width="112" height="64" rx="6"/>
+            <text class="t-tit" x="76" y="106" text-anchor="middle">F0 Protocolo</text>
+            <text class="t-sub" x="76" y="126" text-anchor="middle">congelado + hash</text>
+
+            <rect class="caixa" x="154" y="80" width="112" height="64" rx="6"/>
+            <text class="t-tit" x="210" y="106" text-anchor="middle">F1 Captura</text>
+            <text class="t-sub" x="210" y="126" text-anchor="middle">autos · canais</text>
+
+            <rect class="caixa" x="288" y="80" width="112" height="64" rx="6"/>
+            <text class="t-tit" x="344" y="106" text-anchor="middle">F2 Custódia</text>
+            <text class="t-sub" x="344" y="126" text-anchor="middle">SHA-256 · WORM</text>
+
+            <rect class="caixa" x="422" y="80" width="112" height="64" rx="6"/>
+            <text class="t-tit" x="478" y="106" text-anchor="middle">F3 Triagem</text>
+            <text class="t-sub" x="478" y="126" text-anchor="middle">origem A / B / C</text>
+
+            <rect class="caixa" x="556" y="80" width="112" height="64" rx="6"/>
+            <text class="t-tit" x="612" y="106" text-anchor="middle">F4 · F5 Análise</text>
+            <text class="t-sub" x="612" y="126" text-anchor="middle">laudo · módulo F5</text>
+
+            <rect class="caixa" x="690" y="80" width="112" height="64" rx="6"/>
+            <text class="t-tit" x="746" y="106" text-anchor="middle">F6 Revisão</text>
+            <text class="t-sub" x="746" y="126" text-anchor="middle">cega + Red Team</text>
+
+            <rect class="caixa" x="824" y="80" width="112" height="64" rx="6"/>
+            <text class="t-tit" x="880" y="106" text-anchor="middle">Comitê</text>
+            <text class="t-sub" x="880" y="126" text-anchor="middle">veredito</text>
+
+            <rect class="caixa" x="958" y="80" width="112" height="64" rx="6"/>
+            <text class="t-tit" x="1014" y="106" text-anchor="middle">F7 Publicação</text>
+            <text class="t-sub" x="1014" y="126" text-anchor="middle">após contraditório</text>
+          </g>
+
+          <!-- avanço -->
+          <g>
+            <line class="seta" x1="132" y1="112" x2="152" y2="112" marker-end="url(#m1)"/>
+            <line class="seta" x1="266" y1="112" x2="286" y2="112" marker-end="url(#m1)"/>
+            <line class="seta" x1="400" y1="112" x2="420" y2="112" marker-end="url(#m1)"/>
+            <line class="seta" x1="534" y1="112" x2="554" y2="112" marker-end="url(#m1)"/>
+            <line class="seta" x1="668" y1="112" x2="688" y2="112" marker-end="url(#m1)"/>
+            <line class="seta" x1="802" y1="112" x2="822" y2="112" marker-end="url(#m1)"/>
+            <line class="seta" x1="936" y1="112" x2="956" y2="112" marker-end="url(#m1)"/>
+          </g>
+
+          <!-- gates -->
+          <text class="t-cab" x="16" y="170">SÓ AVANÇA SE</text>
+          <g>
+            <line class="liga-gate" x1="76" y1="144" x2="76" y2="178"/><line class="liga-gate" x1="210" y1="144" x2="210" y2="178"/>
+            <line class="liga-gate" x1="344" y1="144" x2="344" y2="178"/><line class="liga-gate" x1="478" y1="144" x2="478" y2="178"/>
+            <line class="liga-gate" x1="612" y1="144" x2="612" y2="178"/><line class="liga-gate" x1="746" y1="144" x2="746" y2="178"/>
+            <line class="liga-gate" x1="880" y1="144" x2="880" y2="178"/><line class="liga-gate" x1="1014" y1="144" x2="1014" y2="178"/>
+
+            <rect class="gate" x="16" y="178" width="120" height="38" rx="19"/>
+            <text class="t-gate" x="76" y="194" text-anchor="middle">nada capturado</text><text class="t-gate" x="76" y="208" text-anchor="middle">antes do hash</text>
+            <rect class="gate" x="150" y="178" width="120" height="38" rx="19"/>
+            <text class="t-gate" x="210" y="194" text-anchor="middle">origem</text><text class="t-gate" x="210" y="208" text-anchor="middle">atribuível</text>
+            <rect class="gate" x="284" y="178" width="120" height="38" rx="19"/>
+            <text class="t-gate" x="344" y="194" text-anchor="middle">hash da cópia</text><text class="t-gate" x="344" y="208" text-anchor="middle">= original</text>
+            <rect class="gate" x="418" y="178" width="120" height="38" rx="19"/>
+            <text class="t-gate" x="478" y="194" text-anchor="middle">testes definidos</text><text class="t-gate" x="478" y="208" text-anchor="middle">antes de rodar</text>
+            <rect class="gate" x="552" y="178" width="120" height="38" rx="19"/>
+            <text class="t-gate" x="612" y="194" text-anchor="middle">saída bruta</text><text class="t-gate" x="612" y="208" text-anchor="middle">anexada</text>
+            <rect class="gate" x="686" y="178" width="120" height="38" rx="19"/>
+            <text class="t-gate" x="746" y="194" text-anchor="middle">revisor ≠ executor</text><text class="t-gate" x="746" y="208" text-anchor="middle">objeção respondida</text>
+            <rect class="gate" x="820" y="178" width="120" height="38" rx="19"/>
+            <text class="t-gate" x="880" y="194" text-anchor="middle">3/3 indícios</text><text class="t-gate" x="880" y="208" text-anchor="middle">2/3 demais</text>
+            <rect class="gate" x="954" y="178" width="120" height="38" rx="19"/>
+            <text class="t-gate" x="1014" y="194" text-anchor="middle">72h · sem objeção</text><text class="t-gate" x="1014" y="208" text-anchor="middle">jurídico revisou</text>
+          </g>
+
+          <!-- registro -->
+          <text class="t-cab" x="16" y="244">ONDE FICA REGISTRADO</text>
+          <g>
+            <line class="liga-reg" x1="76" y1="216" x2="76" y2="252"/><line class="liga-reg" x1="210" y1="216" x2="210" y2="252"/>
+            <line class="liga-reg" x1="344" y1="216" x2="344" y2="252"/><line class="liga-reg" x1="478" y1="216" x2="478" y2="252"/>
+            <line class="liga-reg" x1="612" y1="216" x2="612" y2="252"/><line class="liga-reg" x1="746" y1="216" x2="746" y2="252"/>
+            <line class="liga-reg" x1="880" y1="216" x2="880" y2="252"/><line class="liga-reg" x1="1014" y1="216" x2="1014" y2="252"/>
+
+            <rect class="reg" x="16" y="252" width="120" height="44" rx="4"/>
+            <text class="t-mono" x="76" y="270" text-anchor="middle">Protocolo_v2.md</text><text class="t-mono" x="76" y="286" text-anchor="middle">ata do Comitê</text>
+            <rect class="reg" x="150" y="252" width="120" height="44" rx="4"/>
+            <text class="t-mono" x="210" y="270" text-anchor="middle">aba Fontes</text><text class="t-mono" x="210" y="286" text-anchor="middle">aba Custodia</text>
+            <rect class="reg" x="284" y="252" width="120" height="44" rx="4"/>
+            <text class="t-mono" x="344" y="270" text-anchor="middle">aba Custodia</text><text class="t-mono" x="344" y="286" text-anchor="middle">Gate F2</text>
+            <rect class="reg" x="418" y="252" width="120" height="44" rx="4"/>
+            <text class="t-mono" x="478" y="270" text-anchor="middle">classe na Custodia</text><text class="t-mono" x="478" y="286" text-anchor="middle">Log_Testes</text>
+            <rect class="reg" x="552" y="252" width="120" height="44" rx="4"/>
+            <text class="t-mono" x="612" y="270" text-anchor="middle">laudos · F5</text><text class="t-mono" x="612" y="286" text-anchor="middle">Divergencias</text>
+            <rect class="reg" x="686" y="252" width="120" height="44" rx="4"/>
+            <text class="t-mono" x="746" y="270" text-anchor="middle">Log_Testes</text><text class="t-mono" x="746" y="286" text-anchor="middle">Red_Team</text>
+            <rect class="reg" x="820" y="252" width="120" height="44" rx="4"/>
+            <text class="t-mono" x="880" y="270" text-anchor="middle">Atas_Comite</text><text class="t-mono" x="880" y="286" text-anchor="middle">Completude_Conj.</text>
+            <rect class="reg" x="954" y="252" width="120" height="44" rx="4"/>
+            <text class="t-mono" x="1014" y="270" text-anchor="middle">Contraditorio</text><text class="t-mono" x="1014" y="286" text-anchor="middle">Painel: Pronto</text>
+          </g>
+        </svg>
+      </div>
+      <p class="dica">Arraste para o lado para ver o fluxo inteiro.</p>
+      <figcaption>Fluxo de cada arquivo. O F0 vem antes de tudo: sem protocolo congelado e com hash publicado, nenhuma captura começa. Os nomes em fonte monoespaçada são as abas da planilha de controle e os arquivos onde cada gate deixa prova.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="s2">
+    <h2 id="s2">2. A fronteira dos dados</h2>
+    <p>O que pode entrar, o que acontece na entrada e o que pode sair. A pseudonimização é feita na importação, antes de qualquer pessoa da análise ver o dado. O segredo que gera os pseudônimos fica fora do ambiente de análise, só com a Custódia.</p>
+    <figure>
+      <div class="rolagem">
+        <svg viewBox="0 0 1080 392" role="img" aria-label="Três fontes permitidas entram pela importação, que calcula o hash e troca CPFs de terceiros por pseudônimos usando um segredo guardado pela Custódia. Dentro do ambiente de análise ficam laudos, matrizes e a planilha. Saem só agregados, laudos revisados e o relatório, depois da revisão jurídica. Quatro tipos de dado são barrados na fronteira.">
+          <defs>
+            <marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ponta" d="M0,0 L10,5 L0,10 z"/></marker>
+          </defs>
+
+          <text class="t-cab" x="20" y="28">PODE ENTRAR</text>
+          <rect class="caixa" x="20" y="40" width="220" height="44" rx="6"/>
+          <text class="t-tit" x="130" y="67" text-anchor="middle">Autos públicos (tribunal)</text>
+          <rect class="caixa" x="20" y="96" width="220" height="44" rx="6"/>
+          <text class="t-tit" x="130" y="123" text-anchor="middle">Canais do próprio titular</text>
+          <rect class="caixa" x="20" y="152" width="220" height="44" rx="6"/>
+          <text class="t-tit" x="130" y="179" text-anchor="middle">Fontes públicas aprovadas</text>
+
+          <line class="seta" x1="240" y1="62" x2="308" y2="92" marker-end="url(#m2)"/>
+          <line class="seta" x1="240" y1="118" x2="308" y2="125" marker-end="url(#m2)"/>
+          <line class="seta" x1="240" y1="174" x2="308" y2="158" marker-end="url(#m2)"/>
+
+          <rect class="caixa-forte" x="310" y="60" width="230" height="130" rx="6"/>
+          <text class="t-tit" x="425" y="86" text-anchor="middle">Importação</text>
+          <text class="t-sub" x="425" y="108" text-anchor="middle">hash na chegada</text>
+          <text class="t-sub" x="425" y="128" text-anchor="middle">CPF de terceiro → PF-XXXXXXXXXX</text>
+          <text class="t-sub" x="425" y="148" text-anchor="middle">nomes, endereços e</text>
+          <text class="t-sub" x="425" y="164" text-anchor="middle">textos livres descartados</text>
+
+          <rect class="gate" x="345" y="228" width="160" height="44" rx="6"/>
+          <text class="t-gate" x="425" y="246" text-anchor="middle">segredo HMAC</text>
+          <text class="t-gate" x="425" y="262" text-anchor="middle">só com a Custódia</text>
+          <line class="seta" x1="425" y1="228" x2="425" y2="192" marker-end="url(#m2)" stroke-dasharray="4 3"/>
+          <text class="t-sub" x="432" y="214">chave</text>
+
+          <line class="seta" x1="540" y1="125" x2="608" y2="125" marker-end="url(#m2)"/>
+          <text class="t-sub" x="574" y="117" text-anchor="middle">pseudônimos</text>
+
+          <rect class="container" x="610" y="30" width="250" height="236" rx="8"/>
+          <text class="t-tit" x="735" y="52" text-anchor="middle">Ambiente de análise</text>
+          <text class="t-sub" x="735" y="68" text-anchor="middle">máquina dedicada · disco criptografado</text>
+          <rect class="caixa" x="630" y="84" width="210" height="40" rx="5"/>
+          <text class="t-sub" x="735" y="108" text-anchor="middle">laudos F4 e relatórios F5</text>
+          <rect class="caixa" x="630" y="136" width="210" height="40" rx="5"/>
+          <text class="t-sub" x="735" y="160" text-anchor="middle">movimentos pseudonimizados</text>
+          <rect class="caixa" x="630" y="188" width="210" height="40" rx="5"/>
+          <text class="t-sub" x="735" y="212" text-anchor="middle">planilha preenchida</text>
+          <text class="t-sub" x="735" y="252" text-anchor="middle">nada daqui vai para nuvem ou Git</text>
+
+          <text class="t-cab" x="900" y="28">PODE SAIR</text>
+          <text class="t-sub" x="900" y="44">após revisão jurídica</text>
+          <rect class="caixa" x="900" y="60" width="165" height="44" rx="6"/>
+          <text class="t-tit" x="982" y="87" text-anchor="middle">Agregados (T2)</text>
+          <rect class="caixa" x="900" y="116" width="165" height="44" rx="6"/>
+          <text class="t-tit" x="982" y="143" text-anchor="middle">Laudos revisados</text>
+          <rect class="caixa" x="900" y="172" width="165" height="44" rx="6"/>
+          <text class="t-tit" x="982" y="199" text-anchor="middle">Relatório público</text>
+          <line class="seta" x1="860" y1="138" x2="898" y2="84" marker-end="url(#m2)"/>
+          <line class="seta" x1="860" y1="138" x2="898" y2="138" marker-end="url(#m2)"/>
+          <line class="seta" x1="860" y1="138" x2="898" y2="192" marker-end="url(#m2)"/>
+
+          <line class="fronteira" x1="20" y1="300" x2="1065" y2="300"/>
+          <text class="t-bad" x="20" y="322">BARRADO NA FRONTEIRA · §2.3 · §10 · §11</text>
+          <rect class="proibido" x="20" y="334" width="245" height="44" rx="6"/>
+          <text class="t-bad" x="142" y="361" text-anchor="middle">material vazado ou em segredo</text>
+          <rect class="proibido" x="285" y="334" width="245" height="44" rx="6"/>
+          <text class="t-bad" x="407" y="361" text-anchor="middle">SITTEL: chamadas, antenas, IMEI</text>
+          <rect class="proibido" x="550" y="334" width="245" height="44" rx="6"/>
+          <text class="t-bad" x="672" y="361" text-anchor="middle">rede ou perfil de terceiros</text>
+          <rect class="proibido" x="815" y="334" width="250" height="44" rx="6"/>
+          <text class="t-bad" x="940" y="361" text-anchor="middle">dados reais no repositório Git</text>
+          <g>
+            <line class="x" x1="136" y1="294" x2="148" y2="306"/><line class="x" x1="148" y1="294" x2="136" y2="306"/>
+            <line class="x" x1="401" y1="294" x2="413" y2="306"/><line class="x" x1="413" y1="294" x2="401" y2="306"/>
+            <line class="x" x1="666" y1="294" x2="678" y2="306"/><line class="x" x1="678" y1="294" x2="666" y2="306"/>
+            <line class="x" x1="934" y1="294" x2="946" y2="306"/><line class="x" x1="946" y1="294" x2="934" y2="306"/>
+          </g>
+        </svg>
+      </div>
+      <p class="dica">Arraste para o lado para ver a figura inteira.</p>
+      <figcaption>Fronteira de dados. Só a Custódia consegue dizer qual pseudônimo corresponde a um CPF (procedimento T3: unanimidade do Comitê e parecer do Jurídico). O kit_sigilo continua no repositório, mas os módulos telefônico, de pessoas e de linha do tempo não podem ser usados nesta verificação.</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="s3">
+    <h2 id="s3">3. Conformidade: cada regra e o controle que a garante</h2>
+    <p>Uma auditoria externa pode pegar qualquer linha desta tabela e conferir a prova. <span class="tag auto">automático</span> é verificado por script ou fórmula; <span class="tag humano">decisão</span> depende de pessoas e fica registrado em ata.</p>
+    <div class="tabela">
+      <table>
+        <thead><tr><th>Regra</th><th>Protocolo</th><th>Controle</th><th>Prova</th></tr></thead>
+        <tbody>
+          <tr><td>A cópia analisada é idêntica ao original</td><td class="ref">§5.2</td><td><span class="tag auto">automático</span>o laudo para se o hash não bater; a planilha só libera o Gate F2 com hash conferido</td><td><code>laudo_*.json</code>, aba Custodia</td></tr>
+          <tr><td>Só alteração de conteúdo é indício (G1–G4)</td><td class="ref">§8.1</td><td><span class="tag auto">automático</span>o laudo registra apenas "Observação"; <span class="tag humano">decisão</span> o Comitê classifica</td><td>laudo, Atas_Comite</td></tr>
+          <tr><td>Tolerância de arredondamento (V1)</td><td class="ref">§8.2</td><td><span class="tag auto">automático</span>a matriz ignora diferenças até o valor de Parametros!B3</td><td>aba Divergencias</td></tr>
+          <tr><td>Contas próprias e créditos que não são renda ficam fora (B1, B2)</td><td class="ref">§8.3</td><td><span class="tag auto">automático</span>o módulo F5 classifica cada lançamento na importação</td><td><code>agregados_publicaveis.csv</code></td></tr>
+          <tr><td>Quebra de saldo por ordem do dia não conta (B4)</td><td class="ref">§8.3</td><td><span class="tag auto">automático</span>checagem 6.5 do núcleo</td><td><code>checagens_simba.csv</code></td></tr>
+          <tr><td>Diferença de créditos é "a explicar", nunca "renda omitida" (B3)</td><td class="ref">§8.3, §16</td><td><span class="tag auto">automático</span>texto fixo no F5; <span class="tag humano">decisão</span> o Jurídico revisa a redação</td><td><code>relatorio_f5.md</code></td></tr>
+          <tr><td>Terceiros pseudonimizados na entrada (T1)</td><td class="ref">§11</td><td><span class="tag auto">automático</span><code>importar_simba</code> troca o CPF e descarta nome e texto livre</td><td>saídas sem CPF de terceiro</td></tr>
+          <tr><td>Publicação só por agregados (T2)</td><td class="ref">§11</td><td><span class="tag humano">decisão</span>movimentos ficam internos; o Jurídico revisa o que sai</td><td>relatório final</td></tr>
+          <tr><td>Identificar um terceiro (T3)</td><td class="ref">§11</td><td><span class="tag humano">decisão</span>unanimidade do Comitê e parecer do Jurídico; só a Custódia roda o comando <code>pseudonimo</code></td><td>Atas_Comite</td></tr>
+          <tr><td>Quem executa não revisa</td><td class="ref">§13.2</td><td><span class="tag auto">automático</span>a planilha marca em vermelho em Log_Testes, Divergencias, Completude e Fontes</td><td>abas da planilha</td></tr>
+          <tr><td>Quórum: 3/3 para indícios e lacunas não explicadas, 2/3 para o resto</td><td class="ref">§13.2</td><td><span class="tag auto">automático</span>a validade do voto é calculada</td><td>Atas_Comite, Completude_Conjuntos</td></tr>
+          <tr><td>Fonte pública aprovada antes do uso</td><td class="ref">§7.2</td><td><span class="tag auto">automático</span>o registro só fica completo com uma ata existente</td><td>aba Fontes</td></tr>
+          <tr><td>Lacuna só dentro do escopo autorizado (L1)</td><td class="ref">§9.2</td><td><span class="tag auto">automático</span>o F5 marca "fora do escopo" a partir do <code>escopo.json</code></td><td><code>completude.csv</code></td></tr>
+          <tr><td>Desvio do protocolo é público</td><td class="ref">§18</td><td><span class="tag humano">decisão</span>registrado em ata e publicado nas limitações do relatório</td><td>Atas_Comite, relatório</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="s4">
+    <h2 id="s4">4. Onde cada coisa vive</h2>
+    <div class="onde">
+      <div><b>Armazenamento da Custódia</b><span>Originais, cópias de trabalho, saídas dos scripts, segredo HMAC. Nunca no Git.</span></div>
+      <div><b>Repositório Git</b><span>Só código, modelos e documentos de método. A planilha vai vazia; as cópias preenchidas ficam fora.</span></div>
+      <div><b>Planilha de controle</b><span>Gates, testes, divergências, completude, atas, fontes e contraditório.</span></div>
+      <div><b>Quadro de tarefas</b><span>Quem faz o quê. <a href="https://claude.ai/artifact/88VLinHHoXdXQLzrqNkvA9" target="_blank" rel="noopener">Abrir o quadro ↗</a></span></div>
+    </div>
+  </section>
+
+  <footer>Baseado no rascunho do protocolo v2.0 (ainda não congelado). Se o protocolo mudar no congelamento, este esquema precisa ser atualizado junto.</footer>
+</div>
